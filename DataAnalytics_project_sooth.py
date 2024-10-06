@@ -4,65 +4,65 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-# Load Data (replace with your data loading mechanism)
+
 @st.cache_data
 def load_data():
-    data = pd.read_csv(r'C:\Users\harsh\sooth\result_dataset.csv')
+    data = pd.read_csv(r'result_dataset.csv')
 
-    # Ensure correct date format with day first
+  
     data['InvoiceDate'] = pd.to_datetime(data['InvoiceDate'])
     return data
 
 
-# Function to get the top 10 best-selling products
+
 def get_top_products(data):
     product_sales = data.groupby('StockCode')['Quantity'].sum().sort_values(ascending=False)
     return product_sales.head(10).index.tolist()
 
 
-# Function to train the time series model (using Exponential Smoothing)
+
 def train_model(stock_id, data, forecast_weeks):
     stock_data = data[data['StockCode'] == stock_id].copy()
     stock_data['InvoiceDate'] = pd.to_datetime(stock_data['InvoiceDate'])
     stock_data.set_index('InvoiceDate', inplace=True)
 
-    # Aggregate data by date to get total quantity sold per day
+  
     daily_data = stock_data['Quantity'].resample('W').sum()
 
-    # Split the data into train and test sets
+    
     train_data = daily_data.iloc[:-forecast_weeks]
     test_data = daily_data.iloc[-forecast_weeks:]
 
-    # Train the Exponential Smoothing model (non-seasonal as default)
+    
     model = ExponentialSmoothing(train_data, trend="add")
     model_fit = model.fit()
 
-    # Forecast the next 'forecast_weeks' weeks
+    
     forecast = model_fit.forecast(forecast_weeks)
 
     return train_data, test_data, forecast, model_fit
 
 
-# Streamlit App Design
+
 def main():
     st.sidebar.title("Input Options")
 
-    # Load data
+   
     data = load_data()
 
-    # Get top 10 best-selling products
+   
     top_products = get_top_products(data)
 
-    # Input for Stock ID and number of weeks
+    
     stock_id = st.sidebar.selectbox("Select a Stock Code:", top_products)
     forecast_weeks = st.sidebar.slider("Number of Weeks to Forecast", min_value=1, max_value=15, value=5)
 
-    # Display forecast button
+   
     if st.sidebar.button("Show Forecast"):
-        # Train model and forecast
+        
         train_data, test_data, forecast, model_fit = train_model(stock_id, data, forecast_weeks)
 
-        # Main Plot: Train vs Predicted Data
+      
         st.header(f"Demand Overview for {stock_id}")
 
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -75,7 +75,7 @@ def main():
         ax.set_ylabel('Demand')
         st.pyplot(fig)
 
-        # Error Distribution Plots
+       
         st.write("### Training Error Distribution")
         train_pred = model_fit.fittedvalues
         train_error = train_data - train_pred
@@ -91,15 +91,15 @@ def main():
         ax3.set_title("Testing Error Distribution")
         st.pyplot(fig3)
 
-        # Prepare forecast data for download
+       
         forecast_df = pd.DataFrame(forecast, columns=['Forecasted_Quantity'])
         forecast_df.index.name = 'Date'
         csv = forecast_df.to_csv(index=True)
 
-        # Download forecast as CSV
+       
         st.download_button(label="Download Forecast as CSV", data=csv, file_name=f'{stock_id}_forecast.csv', mime='text/csv')
 
 
-# Running the app
+
 if __name__ == "__main__":
     main()
