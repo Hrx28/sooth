@@ -16,7 +16,7 @@ The app includes features like historical demand plots, forecast comparisons, an
 ![App Preview](app1.png)
 ![Histogram](app2.png)
 * We can download the prediction in CSV format
-![Download button](app1.png)
+![Download button](app3.png)
 
 
 ## Support
