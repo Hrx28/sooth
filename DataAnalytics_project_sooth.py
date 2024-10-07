@@ -37,7 +37,7 @@ st.markdown("""
 
 @st.cache_data
 def load_data():
-    data = pd.read_csv(r'C:\Users\harsh\sooth\result_dataset.csv')
+    data = pd.read_csv(r'result_dataset.csv')
     data['InvoiceDate'] = pd.to_datetime(data['InvoiceDate'])
     return data
 
